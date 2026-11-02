@@ -38,7 +38,7 @@ typedef struct {
     int minute;                     // minutes
     bool state;                     // RUNNING or STOPPED
     bool hidden;                    // HIDDEN or SHOWING 
-    float centisecondAcumulator;    // decimal part acumulator
+    float centisecondAccumulator;    // decimal part acumulator
     Color backgroundColor;
     Color timerColor;
     Color textColor;
@@ -102,7 +102,7 @@ int main(void)
         .centisecond = 0,
         .second = 0,
         .minute = 0,
-        .centisecondAcumulator = 0,
+        .centisecondAccumulator = 0,
         .state = STOPPED,
         .hidden = SHOWING,
         .backgroundColor = {0x11, 0x14, 0x18, 0xff},
@@ -165,32 +165,26 @@ int main(void)
 static void UpdateFrame(void *void_state) {
 
     State *state = (State *)void_state;
+    
     //----------------------------------------------------------------------------------
     // Listen for key presses and update variables
     //----------------------------------------------------------------------------------
 
-    if (IsKeyPressed(KEY_SPACE)) {
-        if (state->timer.state == STOPPED) state->timer.state = RUNNING;
-        else if (state->timer.state == RUNNING) state->timer.state = STOPPED;
+    if (IsKeyPressed(KEY_SPACE)) state->timer.state = !state->timer.state;
+
+    if (state->timer.state) UpdateTimer(&state->timer); // Update timer required data
+
+    if (IsKeyPressed(KEY_R)) ResetTimer(&state->timer);
+
+    if (IsKeyPressed(KEY_H)) state->timer.hidden = !state->timer.hidden;
+
+    if (IsKeyPressed(KEY_S)) {
+        
+        state->scramble.hidden = !state->scramble.hidden;
+        if (!state->scramble.hidden) scrambleCube(&state->scramble, 20);
+    
     }
-
-    else if (IsKeyPressed(KEY_R)) ResetTimer(&state->timer);
-
-    else if (IsKeyPressed(KEY_H)) {
-        if (state->timer.hidden) state->timer.hidden = false;
-        else state->timer.hidden = true;
-    }
-
-    else if (IsKeyPressed(KEY_S)) {
-        if (!state->scramble.hidden) state->scramble.hidden = HIDDEN;
-        else {
-            scrambleCube(&state->scramble, 20);
-            state->scramble.hidden = SHOWING;
-        }
-    }
-
-    if (state->timer.state == RUNNING) UpdateTimer(&state->timer); // Update timer required data
-
+    
     //----------------------------------------------------------------------------------
     // Draw
     //----------------------------------------------------------------------------------
@@ -226,12 +220,12 @@ static void UpdateTimer(Timer *timer) {
     float frameTime = GetFrameTime(); // Duration of the last frame in seconds
 
     float deltaCentisecond = 100*frameTime;
-    timer->centisecondAcumulator += deltaCentisecond;
+    timer->centisecondAccumulator += deltaCentisecond;
 
     // Update centiseconds
-    if (timer->centisecondAcumulator > 1){
+    if (timer->centisecondAccumulator > 1){
         timer->centisecond++;
-        timer->centisecondAcumulator = 0;
+        timer->centisecondAccumulator = 0;
     }
 
     // Update seconds
@@ -259,7 +253,7 @@ static void ResetTimer(Timer *timer) {
     timer->minute = 0;
     timer->second = 0;
     timer->centisecond = 0;
-    timer->centisecondAcumulator = 0;
+    timer->centisecondAccumulator = 0;
     timer->state = STOPPED;
 }
 
