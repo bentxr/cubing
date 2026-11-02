@@ -39,6 +39,9 @@ typedef struct {
     bool state;                     // RUNNING or STOPPED
     bool hidden;                    // HIDDEN or SHOWING 
     float centisecondAcumulator;    // decimal part acumulator
+    Color backgroundColor;
+    Color timerColor;
+    Color textColor;
 
 } Timer;
 
@@ -101,7 +104,10 @@ int main(void)
         .minute = 0,
         .centisecondAcumulator = 0,
         .state = STOPPED,
-        .hidden = SHOWING
+        .hidden = SHOWING,
+        .backgroundColor = {0x11, 0x14, 0x18, 0xff},
+        .textColor = {0x91, 0x91, 0x91, 0xff},
+        .timerColor = {0xcc, 0xcc, 0xcc, 0xff}
 
     };
 
@@ -125,6 +131,7 @@ int main(void)
     // Define and Init the window
     const int screenWidth = 800;
     const int screenHeight = 450;
+
 
     InitWindow(screenWidth, screenHeight, "cubing timer");
 
@@ -190,23 +197,23 @@ static void UpdateFrame(void *void_state) {
     
     BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(state->timer.backgroundColor);
 
-        DrawText(TextFormat("Press [SPACE] to %s", (state->timer.state == RUNNING)? "stop" : "continue"), 10, 10, 20, DARKGRAY);
+        DrawText(TextFormat("Press [SPACE] to %s", (state->timer.state == RUNNING)? "stop" : "continue"), 10, 10, 20, state->timer.textColor);
         
-        DrawText(TextFormat("Press [R] to reset"), 10, 35, 20, DARKGRAY);
+        DrawText(TextFormat("Press [R] to reset"), 10, 35, 20, state->timer.textColor);
 
-        DrawText(TextFormat("Press [H] to %s the timer", (state->timer.hidden) ? "show" : "hide"), 10, 60, 20, DARKGRAY);
+        DrawText(TextFormat("Press [H] to %s the timer", (state->timer.hidden) ? "show" : "hide"), 10, 60, 20, state->timer.textColor);
 
-        DrawText(TextFormat("Press [S] to %s", (!state->scramble.hidden) ? "hide the scramble" : "show a new scramble"), 10, 85, 20, DARKGRAY);
+        DrawText(TextFormat("Press [S] to %s", (!state->scramble.hidden) ? "hide the scramble" : "show a new scramble"), 10, 85, 20, state->timer.textColor);
 
         const char *timerHiddenText = TextFormat("TIMER HIDDEN");
-        if (state->timer.state == RUNNING && state->timer.hidden) DrawText(timerHiddenText, GetScreenWidth()/2 - MeasureText(timerHiddenText, 50)/2, GetScreenHeight()/2, 50, DARKGRAY);
+        if (state->timer.state == RUNNING && state->timer.hidden) DrawText(timerHiddenText, GetScreenWidth()/2 - MeasureText(timerHiddenText, 50)/2, GetScreenHeight()/2, 50, state->timer.textColor);
         else DrawClockDigital(state->timer, (Vector2){ 30, 180 });
 
         if (!state->scramble.hidden) {
             const char *scrambleText = TextFormat("%s", state->scramble.scramble);
-            DrawText(scrambleText, GetScreenWidth()/2 - MeasureText(scrambleText, 30)/2, 120, 30, DARKGRAY);
+            DrawText(scrambleText, GetScreenWidth()/2 - MeasureText(scrambleText, 30)/2, 120, 30, state->timer.textColor);
         }
 
     EndDrawing();
@@ -261,20 +268,20 @@ static void ResetTimer(Timer *timer) {
 static void DrawClockDigital(Timer timer, Vector2 position) {
 
     // Draw clock using custom 7-segments display (made of shapes)
-    DrawDisplayValue((Vector2){ position.x, position.y }, timer.minute/10, RED, Fade(LIGHTGRAY, 0.3f));
-    DrawDisplayValue((Vector2){ position.x + 120, position.y }, timer.minute%10, RED, Fade(LIGHTGRAY, 0.3f));
+    DrawDisplayValue((Vector2){ position.x, position.y }, timer.minute/10, timer.timerColor, timer.backgroundColor); // Alternative for colorOff: Fade(LIGHTGRAY, 0.3f)
+    DrawDisplayValue((Vector2){ position.x + 120, position.y }, timer.minute%10, timer.timerColor, timer.backgroundColor);
 
-    DrawCircle((int)position.x + 240, (int)position.y + 70, 12, RED);
-    DrawCircle((int)position.x + 240, (int)position.y + 150, 12, RED);
+    DrawCircle((int)position.x + 240, (int)position.y + 70, 12, timer.timerColor);
+    DrawCircle((int)position.x + 240, (int)position.y + 150, 12, timer.timerColor);
 
-    DrawDisplayValue((Vector2){ position.x + 260, position.y }, timer.second/10, RED, Fade(LIGHTGRAY, 0.3f));
-    DrawDisplayValue((Vector2){ position.x + 380, position.y }, timer.second%10, RED, Fade(LIGHTGRAY, 0.3f));
+    DrawDisplayValue((Vector2){ position.x + 260, position.y }, timer.second/10, timer.timerColor, timer.backgroundColor);
+    DrawDisplayValue((Vector2){ position.x + 380, position.y }, timer.second%10, timer.timerColor, timer.backgroundColor);
 
-    DrawCircle((int)position.x + 500, (int)position.y + 70, 12,  RED);
-    DrawCircle((int)position.x + 500, (int)position.y + 150, 12, RED);
+    DrawCircle((int)position.x + 500, (int)position.y + 70, 12,  timer.timerColor);
+    DrawCircle((int)position.x + 500, (int)position.y + 150, 12, timer.timerColor);
 
-    DrawDisplayValue((Vector2){ position.x + 520, position.y }, timer.centisecond/10, RED, Fade(LIGHTGRAY, 0.3f));
-    DrawDisplayValue((Vector2){ position.x + 640, position.y }, timer.centisecond%10, RED, Fade(LIGHTGRAY, 0.3f));
+    DrawDisplayValue((Vector2){ position.x + 520, position.y }, timer.centisecond/10, timer.timerColor, timer.backgroundColor);
+    DrawDisplayValue((Vector2){ position.x + 640, position.y }, timer.centisecond%10, timer.timerColor, timer.backgroundColor);
 
 }
 
