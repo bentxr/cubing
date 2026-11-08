@@ -54,6 +54,8 @@ typedef struct {
 
 typedef struct {
 
+    int screenHeight;
+    int screenWidth;
     Timer timer;
     Scramble scramble;
 
@@ -121,7 +123,9 @@ int main(void)
     State state = { 
 
         .timer = timer,
-        .scramble = scramble
+        .scramble = scramble,
+        .screenWidth = 800,
+        .screenHeight = 450
 
     };
     
@@ -129,11 +133,10 @@ int main(void)
     srand(time(NULL));
 
     // Define and Init the window
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "cubing timer");
+    InitWindow(state.screenWidth, state.screenHeight, "cubing timer");
 
     SetTargetFPS(60);
 
@@ -142,9 +145,9 @@ int main(void)
     //--------------------------------------------------------------------------------------
 
     #if defined(PLATFORM_WEB)
-        emscripten_set_main_loop_arg(UpdateFrame, &state, 0, 1);
+        emscripten_set_main_loop_arg(UpdateFrame, &state, 60, 1);
     #else
-        SetTargetFPS(60); 
+        SetWindowMinSize(800, 450);
         while (!WindowShouldClose()) UpdateFrame(&state); // Detect window close button or ESC key
     #endif 
 
@@ -165,6 +168,10 @@ int main(void)
 static void UpdateFrame(void *void_state) {
 
     State *state = (State *)void_state;
+    state->screenHeight = GetScreenHeight();
+    state->screenWidth = GetScreenWidth();
+    int sw = state->screenWidth;
+    int sh = state->screenHeight;
     
     //----------------------------------------------------------------------------------
     // Listen for key presses and update variables
@@ -202,12 +209,12 @@ static void UpdateFrame(void *void_state) {
         DrawText(TextFormat("Press [S] to %s", (!state->scramble.hidden) ? "hide the scramble" : "show a new scramble"), 10, 85, 20, state->timer.textColor);
 
         const char *timerHiddenText = TextFormat("TIMER HIDDEN");
-        if (state->timer.state == RUNNING && state->timer.hidden) DrawText(timerHiddenText, GetScreenWidth()/2 - MeasureText(timerHiddenText, 50)/2, GetScreenHeight()/2, 50, state->timer.textColor);
-        else DrawClockDigital(state->timer, (Vector2){ GetScreenWidth()/2-370, GetScreenHeight()*2/5 });
+        if (state->timer.state == RUNNING && state->timer.hidden) DrawText(timerHiddenText, sw/2 - MeasureText(timerHiddenText, 50)/2, sh/2, 50, state->timer.textColor);
+        else DrawClockDigital(state->timer, (Vector2){ sw/2-370, sh*2/5 });
 
         if (!state->scramble.hidden) {
             const char *scrambleText = TextFormat("%s", state->scramble.scramble);
-            DrawText(scrambleText, GetScreenWidth()/2 - MeasureText(scrambleText, 30)/2, 120, 30, state->timer.textColor);
+            DrawText(scrambleText, sw/2 - MeasureText(scrambleText, 30)/2, 120, 30, state->timer.textColor);
         }
 
     EndDrawing();
