@@ -132,7 +132,7 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "cubing timer");
 
     SetTargetFPS(60);
@@ -203,7 +203,7 @@ static void UpdateFrame(void *void_state) {
 
         const char *timerHiddenText = TextFormat("TIMER HIDDEN");
         if (state->timer.state == RUNNING && state->timer.hidden) DrawText(timerHiddenText, GetScreenWidth()/2 - MeasureText(timerHiddenText, 50)/2, GetScreenHeight()/2, 50, state->timer.textColor);
-        else DrawClockDigital(state->timer, (Vector2){ 30, 180 });
+        else DrawClockDigital(state->timer, (Vector2){ GetScreenWidth()/2-370, GetScreenHeight()*2/5 });
 
         if (!state->scramble.hidden) {
             const char *scrambleText = TextFormat("%s", state->scramble.scramble);
