@@ -40,7 +40,7 @@ The project uses Make to build and is currently configured with the following op
 
 ## Status
 
-In development.
+In development. Live [here](https://bentor.dev/cubing).
 
 ## License
 
